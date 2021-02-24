@@ -17,7 +17,7 @@ pipeline {
     stage('Clone webapp src from git') {
       steps{
         //Use 'git: Git' to clone webapp source form git repository wih associated Dockerfile
-        git 'https://github.com/mas0lik/boxfuse-test1.git'
+        git 'https://github.com/mas0lik/boxfuse-test1'
       }
     }
 
@@ -29,14 +29,19 @@ pipeline {
 
     stage('Build and push docker image') {
       steps {
-        sh 'docker build -f Dockerfile -t mas0lik/prod-webapp .'
-        sh 'docker push mas0lik/prod-webapp'
+        sh 'docker build -f Dockerfile -t mas0lik/prod-webapp:prod .'
+        sh 'docker push mas0lik/prod-webapp:prod'
       }
     }
 
     stage('Pull docker image and run container on production environment') {
       steps {
-        bla4
+        //Using SSH Agent plugin with private key
+        sshagent(['c599679c-0d65-4c66-8d0a-49d266b6dfaa']) {
+          sh 'ssh -o StrictHostKeyChecking=no root@34.121.239.27'
+          sh 'docker pull mas0lik/prod-webapp:prod'
+          sh 'docker run -it --rm --name prod-webapp-deployed -d -p 8888:8080'
+        }
       }
     }
 

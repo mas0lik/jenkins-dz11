@@ -1,7 +1,7 @@
 #This is Docker file for Jenkins Agent as Build Environment Contaier
 #Using base image Ubuntu 20.04
 FROM ubuntu:20.04
-ENV TZ=Europe/Moscow
+ENV DEBIAN_FRONTEND=noninteractive
 
 #Update Repos
 RUN apt-get update

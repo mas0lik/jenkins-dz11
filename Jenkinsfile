@@ -1,39 +1,32 @@
 pipeline {
-
-  agent {
-
-    docker {
-      image 'mas0lik/docker-jenkins-agent'
-      //Use arguments to map sockets and user Root
-      args  '-v /var/run/docker.sock:/var/run/docker.sock -u 0:0'
-      //Use to automate authentication at Docker Hub
-      registryCredentialsId '942976e5-e679-4d45-aaf8-f34ea6cf3e0a'
-    }
-  }
+  agent none
 
   stages {
 
-    stage('Clone webapp src from git') {
+    stage('Build webapp using docker container environment') {
+      agent {
+        docker {
+          image 'mas0lik/docker-jenkins-agent'
+          //Use arguments to map sockets and user Root
+          args  '-v /var/run/docker.sock:/var/run/docker.sock -u 0:0'
+          //Use to automate authentication at Docker Hub
+          registryCredentialsId '942976e5-e679-4d45-aaf8-f34ea6cf3e0a'
+        }
+      }
       steps{
         //Use 'git: Git' to clone webapp source form git repository wih associated Dockerfile
         git 'https://github.com/mas0lik/boxfuse-test1'
-      }
-    }
-
-    stage('Build war file') {
-      steps {
+        //Build webapp using pom.xml
         sh 'mvn package'
-      }
-    }
-
-    stage('Build and push docker image') {
-      steps {
+        //Build docker image with webapp for production environment
         sh 'docker build -f Dockerfile -t mas0lik/prod-webapp:prod .'
+        //Push docker image to repository
         sh 'docker push mas0lik/prod-webapp:prod'
       }
     }
 
     stage('Pull docker image and run container on production environment') {
+      agent any
       steps {
         //Using SSH Agent plugin with private key
         sshagent(['c599679c-0d65-4c66-8d0a-49d266b6dfaa']) {
@@ -43,7 +36,5 @@ pipeline {
         }
       }
     }
-
   }
-
 }

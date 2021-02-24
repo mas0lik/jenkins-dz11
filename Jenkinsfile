@@ -37,8 +37,10 @@ pipeline {
       steps {
         //Using SSH Agent plugin with private key
         sshagent(['c599679c-0d65-4c66-8d0a-49d266b6dfaa']) {
-          sh 'ssh -o StrictHostKeyChecking=no root@34.121.239.27 docker pull mas0lik/prod-webapp:prod'
-          sh 'ssh -o StrictHostKeyChecking=no root@34.121.239.27 docker run --rm --name prod-webapp-deployed -d -p 8888:8080 mas0lik/prod-webapp:prod'
+          sh '''ssh -o StrictHostKeyChecking=no root@34.121.239.27 << EOF
+          docker pull mas0lik/prod-webapp:prod
+          docker run --rm --name prod-webapp-deployed -d -p 8888:8080 mas0lik/prod-webapp:prod
+EOF'''
         }
       }
     }
